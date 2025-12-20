@@ -52,20 +52,22 @@ export async function ensureDbFile(): Promise<void> {
     await fs.access(DB_PATH);
   } catch {
     const json = JSON.stringify(DEFAULT_DB, null, 2);
-    await writeAtomic(DB_PATH, json);
+    try {
+      await writeAtomic(DB_PATH, json);
+    } catch (err) {
+      console.warn("Failed to create DB file (likely read-only FS):", err);
+      // On Vercel, we can't write, but we should at least not crash the whole app.
+    }
   }
 }
 
 export async function readDb(): Promise<Db> {
-  await ensureDbFile();
-
-  const raw = await fs.readFile(DB_PATH, "utf8");
   try {
+    await ensureDbFile();
+    const raw = await fs.readFile(DB_PATH, "utf8");
     return JSON.parse(raw) as Db;
-  } catch {
-    // If the file was corrupted, reset it rather than crashing the app.
-    const json = JSON.stringify(DEFAULT_DB, null, 2);
-    await writeAtomic(DB_PATH, json);
+  } catch (err) {
+    console.error("Database read failed, falling back to default:", err);
     return DEFAULT_DB;
   }
 }
@@ -74,12 +76,21 @@ export async function writeDb(
   mutate: (db: Db) => void | Db | Promise<void | Db>,
 ): Promise<Db> {
   return runExclusive(async () => {
-    await fs.mkdir(DB_DIR, { recursive: true });
-    const db = await readDb();
-    const maybeNext = await mutate(db);
-    const next = (maybeNext ?? db) as Db;
-    await writeAtomic(DB_PATH, JSON.stringify(next, null, 2));
-    return next;
+    try {
+      await fs.mkdir(DB_DIR, { recursive: true });
+      const db = await readDb();
+      const maybeNext = await mutate(db);
+      const next = (maybeNext ?? db) as Db;
+      await writeAtomic(DB_PATH, JSON.stringify(next, null, 2));
+      return next;
+    } catch (err) {
+      console.error("Database write failed:", err);
+      // In a read-only environment, we still return the mutated object so the 
+      // current request feels successful, even if it won't persist.
+      const db = await readDb();
+      const maybeNext = await mutate(db);
+      return (maybeNext ?? db) as Db;
+    }
   });
 }
 
