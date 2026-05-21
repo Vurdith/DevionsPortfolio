@@ -62,7 +62,7 @@ export function LoadingScene() {
               <motion.span 
                 className="font-serif text-sm italic text-ink/60"
               >
-                Devion.
+                Virguê.
               </motion.span>
             </div>
 

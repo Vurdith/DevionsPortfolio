@@ -14,6 +14,11 @@ const STORAGE_KEY = "ui:soundMuted";
 
 export const UiSoundContext = React.createContext<UiSoundApi | null>(null);
 
+type WindowWithWebkitAudio = Window &
+  typeof globalThis & {
+    webkitAudioContext?: typeof AudioContext;
+  };
+
 export function UiSoundProvider({ children }: { children: React.ReactNode }) {
   const [muted, setMuted] = React.useState(true);
   const audioCtxRef = React.useRef<AudioContext | null>(null);
@@ -43,7 +48,14 @@ export function UiSoundProvider({ children }: { children: React.ReactNode }) {
 
   const initAudio = React.useCallback(() => {
     if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextConstructor =
+        window.AudioContext || (window as WindowWithWebkitAudio).webkitAudioContext;
+
+      if (!AudioContextConstructor) {
+        throw new Error("AudioContext is not supported in this browser.");
+      }
+
+      audioCtxRef.current = new AudioContextConstructor();
     }
     if (audioCtxRef.current.state === "suspended") {
       audioCtxRef.current.resume();
@@ -94,8 +106,8 @@ export function UiSoundProvider({ children }: { children: React.ReactNode }) {
   }, [playTone]);
 
   const playClose = React.useCallback(() => {
-    const ctx = initAudio();
     if (muted) return;
+    initAudio();
     playTone(440, "sine", 0.1, 0.06);
     setTimeout(() => playTone(330, "sine", 0.15, 0.04), 50);
   }, [playTone, muted, initAudio]);

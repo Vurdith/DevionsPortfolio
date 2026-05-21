@@ -5,31 +5,48 @@ import { motion } from "framer-motion";
 
 const PARTICLE_COUNT = 15;
 
+type FairyConfig = {
+  id: number;
+  initial: { x: string; y: string };
+  target: { x: string; y: string };
+  duration: { left: number; top: number; glow: number };
+};
+
 export function ParticleField() {
-  const [particles, setParticles] = React.useState<number[]>([]);
+  const [particles, setParticles] = React.useState<FairyConfig[]>([]);
 
   React.useEffect(() => {
-    setParticles(Array.from({ length: PARTICLE_COUNT }).map((_, i) => i));
+    setParticles(
+      Array.from({ length: PARTICLE_COUNT }).map((_, i) => ({
+        id: i,
+        initial: {
+          x: `${Math.random() * 100}%`,
+          y: `${Math.random() * 100}%`,
+        },
+        target: {
+          x: `${Math.random() * 100}%`,
+          y: `${Math.random() * 100}%`,
+        },
+        duration: {
+          left: 15 + Math.random() * 15,
+          top: 15 + Math.random() * 15,
+          glow: 4 + Math.random() * 4,
+        },
+      }))
+    );
   }, []);
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[60] overflow-hidden">
-      {particles.map((i) => (
-        <Fairy key={i} />
+      {particles.map((particle) => (
+        <Fairy config={particle} key={particle.id} />
       ))}
     </div>
   );
 }
 
-function Fairy() {
-  const [target, setTarget] = React.useState({ 
-    x: `${Math.random() * 100}%`, 
-    y: `${Math.random() * 100}%` 
-  });
-  const [initialPos] = React.useState({
-    x: `${Math.random() * 100}%`,
-    y: `${Math.random() * 100}%`
-  });
+function Fairy({ config }: { config: FairyConfig }) {
+  const [target, setTarget] = React.useState(config.target);
 
   React.useEffect(() => {
     const wander = () => {
@@ -46,14 +63,14 @@ function Fairy() {
 
   return (
     <motion.div
-      initial={{ left: initialPos.x, top: initialPos.y }}
+      initial={{ left: config.initial.x, top: config.initial.y }}
       animate={{ 
         left: target.x, 
         top: target.y,
       }}
       transition={{ 
-        left: { duration: 15 + Math.random() * 15, ease: "linear" },
-        top: { duration: 15 + Math.random() * 15, ease: "linear" },
+        left: { duration: config.duration.left, ease: "linear" },
+        top: { duration: config.duration.top, ease: "linear" },
       }}
       className="absolute h-[3px] w-[3px]"
     >
@@ -63,7 +80,7 @@ function Fairy() {
           scale: [0.8, 1.3, 0.8]
         }}
         transition={{ 
-          duration: 4 + Math.random() * 4,
+          duration: config.duration.glow,
           repeat: Infinity,
           ease: "easeInOut"
         }}

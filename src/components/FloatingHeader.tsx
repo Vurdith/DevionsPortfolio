@@ -97,7 +97,7 @@ export function FloatingHeader({ className }: { className?: string }) {
             "text-xs tracking-[0.22em] text-ink",
           )}
         >
-          <span className="font-serif text-sm tracking-[-0.02em]">D</span>
+          <span className="font-serif text-sm tracking-[-0.02em]">V</span>
           <span className="text-fog/80">/</span>
           <span className="text-fog/80">PORTFOLIO</span>
         </div>
