@@ -1,132 +1,228 @@
 "use client";
 
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+
 import { useUiSounds } from "@/hooks/useUiSounds";
 
+const INTRO_VIDEO = "/intro-loader-v2.mp4";
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 export function LoadingScene() {
-  const [loading, setLoading] = React.useState(true);
+  const [visible, setVisible] = React.useState(true);
+  const [videoDone, setVideoDone] = React.useState(false);
+  const [showLoader, setShowLoader] = React.useState(false);
   const [percent, setPercent] = React.useState(0);
-  const [canEnter, setCanEnter] = React.useState(false);
+  const musicStartedRef = React.useRef(false);
+  const videoRef = React.useRef<HTMLVideoElement | null>(null);
+  const canEnter = percent >= 100;
   const { playHover, playClick, toggleMuted, muted } = useUiSounds();
 
   React.useEffect(() => {
-    const interval = setInterval(() => {
-      setPercent((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setCanEnter(true);
-          return 100;
-        }
-        return Math.min(prev + 4, 100);
-      });
-    }, 20);
+    const video = videoRef.current;
+    if (!video) return;
 
-    return () => clearInterval(interval);
+    video.muted = false;
+    video.volume = 0.8;
   }, []);
 
-  const handleEnter = () => {
+  const finishVideo = React.useCallback(() => {
+    setVideoDone(true);
+    if (!musicStartedRef.current && muted) {
+      musicStartedRef.current = true;
+      toggleMuted();
+    }
+  }, [muted, toggleMuted]);
+
+  const enterSite = React.useCallback(() => {
+    if (!canEnter) return;
     playClick();
-    // If it's muted (default), we toggle it ON to start the music
-    if (muted) toggleMuted();
-    setLoading(false);
-  };
+    setVisible(false);
+  }, [canEnter, playClick]);
+
+  React.useEffect(() => {
+    if (!videoDone) return;
+
+    setPercent(0);
+    let progressInterval: number | null = null;
+    const loaderDelay = window.setTimeout(() => setShowLoader(true), 520);
+    const progressDelay = window.setTimeout(() => {
+      progressInterval = window.setInterval(() => {
+        setPercent((previous) => {
+          if (previous >= 100) {
+            if (progressInterval !== null) {
+              window.clearInterval(progressInterval);
+            }
+            return 100;
+          }
+
+          return Math.min(previous + 4, 100);
+        });
+      }, 50);
+    }, 900);
+
+    return () => {
+      window.clearTimeout(loaderDelay);
+      window.clearTimeout(progressDelay);
+      if (progressInterval !== null) {
+        window.clearInterval(progressInterval);
+      }
+    };
+  }, [videoDone]);
 
   return (
     <AnimatePresence>
-      {loading && (
+      {visible ? (
         <motion.div
+          className="fixed inset-0 z-[100] overflow-hidden bg-void"
           initial={{ opacity: 1 }}
-          exit={{ 
+          exit={{
             opacity: 0,
-            filter: "blur(20px)",
-            transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
+            transition: { duration: 0.24, ease: EASE },
           }}
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-void"
         >
-          {/* Progress Area */}
-          <div className="relative w-64 overflow-visible">
-            <div className="flex items-baseline justify-between mb-3 px-1">
-              <div className="flex items-center gap-3">
-                <motion.span 
-                  className="text-[9px] font-bold tracking-[0.4em] text-fog/40"
-                >
-                  {canEnter ? "READY" : "INITIALIZING"}
-                </motion.span>
-                {!canEnter && (
-                  <span className="text-[9px] tabular-nums tracking-[0.2em] text-ink/40">
-                    {percent}%
-                  </span>
-                )}
-              </div>
-              <motion.span 
-                className="font-serif text-sm italic text-ink/60"
-              >
-                Virguê.
-              </motion.span>
-            </div>
+          <AnimatePresence>
+            {!videoDone ? (
+              <motion.video
+                ref={videoRef}
+                key="intro-video"
+                className="h-full w-full object-cover"
+                src={INTRO_VIDEO}
+                autoPlay
+                playsInline
+                preload="auto"
+                onEnded={finishVideo}
+                onError={finishVideo}
+                onCanPlay={() => {
+                  const video = videoRef.current;
+                  if (!video) return;
+                  video.muted = false;
+                  video.volume = 0.8;
+                  video.play().catch(() => {});
+                }}
+                exit={{
+                  opacity: 0,
+                  transition: { duration: 0.55, ease: EASE },
+                }}
+              />
+            ) : null}
+          </AnimatePresence>
 
-            {/* High-End Progress Bar */}
-            <div className="relative h-[1px] w-full bg-white/5">
+          <motion.div
+            aria-hidden="true"
+            className="pointer-events-none absolute -inset-[35%] opacity-75"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, rgba(255,255,255,0.075) 0%, rgba(255,255,255,0.03) 28%, transparent 62%)",
+              willChange: "transform",
+            }}
+            animate={{ x: ["-8%", "8%"], y: ["4%", "-4%"] }}
+            transition={{ duration: 20, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+          />
+
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] [background-size:52px_52px]"
+          />
+
+          {showLoader ? (
+            <div
+              className="absolute inset-0 grid place-items-center"
+            >
               <motion.div
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: canEnter ? 1 : percent / 100 }}
-                className="relative h-full origin-left bg-ink/40"
+                className="relative w-64 overflow-visible"
+                initial={{ y: 22, scale: 0.92, filter: "blur(10px)" }}
+                animate={{
+                  y: 0,
+                  scale: [0.92, 1.025, 1],
+                  filter: ["blur(10px)", "blur(2px)", "blur(0px)"],
+                }}
+                transition={{ duration: 1.15, ease: EASE, times: [0, 0.78, 1] }}
+                style={{
+                  transformOrigin: "center center",
+                  willChange: "transform, filter",
+                }}
               >
-                <motion.div 
-                  className="absolute right-0 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 blur-xl"
-                  animate={{ opacity: [0.3, 0.6, 0.3] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
+                <div className="mb-3 flex items-baseline justify-between px-1">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[9px] font-bold tracking-[0.4em] text-fog/45">
+                      {canEnter ? "READY" : "INITIALIZING"}
+                    </span>
+                    {!canEnter ? (
+                      <span className="text-[9px] tabular-nums tracking-[0.2em] text-ink/45">
+                        {percent}%
+                      </span>
+                    ) : null}
+                  </div>
+                  <span className="font-serif text-sm italic text-ink/65">Virguê.</span>
+                </div>
+
+                <div className="relative h-px w-full bg-white/8">
+                  <div className="absolute inset-0 overflow-hidden">
+                    <motion.div
+                      className="h-full origin-left bg-ink/55"
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: percent / 100 }}
+                      transition={{ duration: 0.12, ease: "linear" }}
+                    />
+                  </div>
+
+                  {percent > 0 ? (
+                    <motion.span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/18 blur-xl"
+                      style={{ left: `${percent}%` }}
+                      animate={{ opacity: [0.34, 0.82, 0.34], scale: [0.86, 1.12, 0.86] }}
+                      transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                  ) : null}
+                </div>
+
+                <div className="mt-8 flex justify-center">
+                  <AnimatePresence mode="wait">
+                    {canEnter ? (
+                      <motion.button
+                        key="enter"
+                        type="button"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.42, ease: EASE }}
+                        onMouseEnter={playHover}
+                        onClick={enterSite}
+                        className="group relative border border-line/20 bg-void/55 px-8 py-3 text-[10px] tracking-[0.3em] text-ink transition-colors hover:border-line/40 hover:bg-void"
+                      >
+                        ENTER SITE
+                        <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100">
+                          <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-line/40" />
+                          <span className="absolute right-0 top-0 h-2 w-2 border-r border-t border-line/40" />
+                          <span className="absolute bottom-0 left-0 h-2 w-2 border-b border-l border-line/40" />
+                          <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-line/40" />
+                        </span>
+                      </motion.button>
+                    ) : (
+                      <motion.div
+                        key="dots"
+                        className="flex gap-1"
+                        exit={{ opacity: 0 }}
+                      >
+                        {[0, 1, 2].map((i) => (
+                          <motion.span
+                            key={i}
+                            className="h-1 w-1 rounded-full bg-ink/30"
+                            animate={{ opacity: [0.2, 1, 0.2] }}
+                            transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                          />
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </motion.div>
             </div>
-
-            {/* Interaction Button */}
-            <div className="mt-8 flex justify-center">
-              <AnimatePresence mode="wait">
-                {canEnter ? (
-                  <motion.button
-                    key="enter-btn"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    onMouseEnter={playHover}
-                    onClick={handleEnter}
-                    className="group relative border border-line/20 bg-void/50 px-8 py-3 text-[10px] tracking-[0.3em] text-ink transition-colors hover:border-line/40 hover:bg-void"
-                  >
-                    ENTER SITE
-                    <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-line/40" />
-                      <span className="absolute right-0 top-0 h-2 w-2 border-r border-t border-line/40" />
-                      <span className="absolute bottom-0 left-0 h-2 w-2 border-b border-l border-line/40" />
-                      <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-line/40" />
-                    </span>
-                  </motion.button>
-                ) : (
-                  <motion.div 
-                    key="loading-dots"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex gap-1"
-                  >
-                    {[0, 1, 2].map((i) => (
-                      <motion.div
-                        key={i}
-                        animate={{ opacity: [0.2, 1, 0.2] }}
-                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                        className="h-1 w-1 bg-ink/30 rounded-full"
-                      />
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]" />
+          ) : null}
         </motion.div>
-      )}
+      ) : null}
     </AnimatePresence>
   );
 }
-

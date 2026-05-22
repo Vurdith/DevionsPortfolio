@@ -28,16 +28,20 @@ function seededBetween(seed: number, min: number, max: number) {
   return min + seededRandom(seed) * (max - min);
 }
 
+function unit(value: number, suffix: string) {
+  return `${value.toFixed(3)}${suffix}`;
+}
+
 const PARTICLES: Particle[] = Array.from({ length: PARTICLE_COUNT }, (_, id) => ({
   id,
   style: {
-    "--x0": `${seededBetween(id * 7 + 1, -6, 106)}vw`,
-    "--y0": `${seededBetween(id * 7 + 2, -6, 106)}vh`,
-    "--x1": `${seededBetween(id * 7 + 3, -6, 106)}vw`,
-    "--y1": `${seededBetween(id * 7 + 4, -6, 106)}vh`,
-    "--drift": `${seededBetween(id * 7 + 5, 24, 42)}s`,
-    "--glow": `${seededBetween(id * 7 + 6, 4, 8)}s`,
-    "--delay": `${seededBetween(id * 7 + 7, -18, 0)}s`,
+    "--x0": unit(seededBetween(id * 7 + 1, -6, 106), "vw"),
+    "--y0": unit(seededBetween(id * 7 + 2, -6, 106), "vh"),
+    "--x1": unit(seededBetween(id * 7 + 3, -6, 106), "vw"),
+    "--y1": unit(seededBetween(id * 7 + 4, -6, 106), "vh"),
+    "--drift": unit(seededBetween(id * 7 + 5, 24, 42), "s"),
+    "--glow": unit(seededBetween(id * 7 + 6, 4, 8), "s"),
+    "--delay": unit(seededBetween(id * 7 + 7, -18, 0), "s"),
   },
 }));
 

@@ -15,7 +15,7 @@ export function ClientChrome() {
 
   return (
     <>
-      <LoadingScene />
+      {pathname === "/" ? <LoadingScene /> : null}
       <ParticleField />
       <FloatingHeader />
       <div className="fixed bottom-5 right-5 z-50">
