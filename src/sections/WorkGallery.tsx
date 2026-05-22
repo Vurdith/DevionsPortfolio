@@ -81,7 +81,7 @@ export function WorkGallery({
 
       <div className="absolute inset-0 z-[1] pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-b from-void via-transparent to-void" />
-        <div className="absolute inset-0 opacity-8 [background:repeating-linear-gradient(to_bottom,rgba(255,255,255,0.05)_0px,rgba(255,255,255,0.05)_1px,transparent_2px,transparent_10px)]" />
+        <div className="absolute inset-0 opacity-10 mix-blend-overlay [background:repeating-linear-gradient(to_bottom,rgba(255,255,255,0.05)_0px,rgba(255,255,255,0.05)_1px,transparent_2px,transparent_10px)] animate-scanlines" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-10">
@@ -100,8 +100,8 @@ export function WorkGallery({
           </div>
 
           <p className="max-w-lg text-pretty text-sm leading-relaxed text-fog/80">
-            A strict grid, but not a safe one. Hover is a lens: rings, scanlines, a controlled
-            blur-field. Click to enter a full-screen screening.
+            A strict grid, but not a safe one. Hover is a lens: rings, scanlines, and a controlled
+            reveal field. Click to enter a full-screen screening.
           </p>
         </header>
 
@@ -130,7 +130,7 @@ function WorkCard({ work, backdrop }: { work: Work; backdrop: string }) {
   const rotY = useSpring(rY, { stiffness: 520, damping: 44, mass: 0.6 });
   const o = useSpring(hover, { stiffness: 520, damping: 44, mass: 0.6 });
 
-  const mask = useMotionTemplate`radial-gradient(180px 180px at ${x}px ${y}px, #000 0%, transparent 62%)`;
+  const mask = useMotionTemplate`radial-gradient(180px 180px at ${x}px ${y}px, #000 0%, #000 58%, transparent 76%)`;
   const tiltShadow = useTransform(o, [0, 1], ["0px", "4px"]);
   const shadow = useMotionTemplate`0 ${tiltShadow} 12px rgba(0,0,0,0.8)`;
 
@@ -185,17 +185,16 @@ function WorkCard({ work, backdrop }: { work: Work; backdrop: string }) {
         )}
       >
         <div
-          className="absolute inset-0 scale-[1.02]"
+          className="absolute inset-0 scale-[1.025] blur-[2px]"
           style={{ 
             backgroundImage: work.media.src 
-              ? `url(${work.media.src}), ${backdrop}, linear-gradient(180deg, rgb(0 0 0 / 0.1) 0%, rgb(0 0 0 / 0.8) 100%)` 
+              ? `linear-gradient(180deg, rgb(0 0 0 / 0.10), rgb(0 0 0 / 0.78)), url(${work.media.src}), ${backdrop}` 
               : `${backdrop}, linear-gradient(180deg, rgb(0 0 0 / 0.1) 0%, rgb(0 0 0 / 0.8) 100%)`,
             backgroundSize: "cover",
             backgroundPosition: "center"
           }}
         />
 
-        {/* Subtle “screen” texture across the whole card. */}
         {/* Sharp-field revealed only under the moving lens (mask). */}
         <motion.div
           aria-hidden="true"
@@ -210,10 +209,17 @@ function WorkCard({ work, backdrop }: { work: Work; backdrop: string }) {
             className="absolute inset-0 scale-[1.01]"
             style={{ 
               backgroundImage: work.media.src 
-                ? `url(${work.media.src}), ${backdrop}, linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.4) 100%)` 
+                ? `url(${work.media.src})` 
                 : `${backdrop}`,
               backgroundSize: "cover",
               backgroundPosition: "center"
+            }}
+          />
+          <div
+            className="pointer-events-none absolute inset-0 opacity-75 mix-blend-overlay animate-scanlines"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(to bottom, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 1px, transparent 2px, transparent 7px)",
             }}
           />
         </motion.div>
@@ -232,6 +238,13 @@ function WorkCard({ work, backdrop }: { work: Work; backdrop: string }) {
         >
           <div className="absolute inset-0 rounded-full border border-line/30 animate-ring" />
           <div className="absolute inset-[18px] rounded-full border border-line/20 [border-style:dashed] animate-ring [animation-duration:3.6s]" />
+          <div
+            className="absolute inset-[30px] rounded-full opacity-55 mix-blend-overlay animate-scanlines"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(to bottom, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 1px, transparent 2px, transparent 7px)",
+            }}
+          />
           <div className="absolute inset-0 rounded-full bg-white/[0.06]" />
         </motion.div>
 

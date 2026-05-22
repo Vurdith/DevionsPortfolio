@@ -81,7 +81,6 @@ export function Hero({ className }: { className?: string }) {
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(140%_120%_at_50%_10%,transparent_20%,rgba(0,0,0,1)_90%)]" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-void/40 to-void" />
-        <div className="absolute inset-0 opacity-12 [background:repeating-linear-gradient(to_bottom,rgba(255,255,255,0.08)_0px,rgba(255,255,255,0.08)_1px,transparent_2px,transparent_8px)]" />
       </div>
 
       <div className="relative mx-auto flex min-h-[100svh] max-w-6xl flex-col px-6 py-10 md:px-10 md:py-14">

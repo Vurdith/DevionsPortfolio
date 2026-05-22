@@ -58,13 +58,14 @@
 
   .film-grain::before {
     content: "";
-    position: absolute;
-    inset: 0;
+    position: fixed;
+    inset: -20%;
     pointer-events: none;
-    z-index: 1;
+    z-index: 50;
     background-image: url("/noise.svg");
-    background-size: 220px 220px;
-    opacity: 0.028;
+    opacity: 0.065;
+    mix-blend-mode: overlay;
+    transform: translateZ(0);
   }
 
   /* Subtle vignette to keep the center “projected.” */
@@ -74,18 +75,13 @@
 
   .vignette::after {
     content: "";
-    position: absolute;
+    position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 1;
+    z-index: 40;
     background: radial-gradient(120% 90% at 50% 15%, transparent 40%, rgb(0 0 0 / 0.75) 100%);
-    opacity: 0.58;
-  }
-
-  .film-grain > *,
-  .vignette > * {
-    position: relative;
-    z-index: 2;
+    opacity: 0.75;
+    transform: translateZ(0);
   }
 }
 
@@ -94,6 +90,7 @@
     scroll-behavior: auto;
   }
 
+  .animate-scanlines,
   .animate-marquee,
   .animate-ring {
     animation: none !important;

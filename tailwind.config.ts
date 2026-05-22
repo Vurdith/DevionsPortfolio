@@ -15,6 +15,10 @@ export default {
         line: "rgb(var(--line) / <alpha-value>)",
       },
       keyframes: {
+        scanlines: {
+          "0%": { backgroundPosition: "0 0" },
+          "100%": { backgroundPosition: "0 10px" },
+        },
         marquee: {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
@@ -25,6 +29,7 @@ export default {
         },
       },
       animation: {
+        scanlines: "scanlines 1.6s linear infinite",
         marquee: "marquee var(--marquee-duration, 22s) linear infinite",
         ring: "ringRotate 2.6s linear infinite",
       },

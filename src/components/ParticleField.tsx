@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-const PARTICLE_COUNT = 10;
+const PARTICLE_COUNT = 14;
 
 type ParticleStyle = React.CSSProperties & {
   "--x0": string;
@@ -46,7 +46,7 @@ export function ParticleField() {
   if (!particles.length) return null;
 
   return (
-    <div className="particle-field pointer-events-none fixed inset-0 z-[60] overflow-hidden">
+    <div className="particle-field pointer-events-none fixed inset-0 z-[35] overflow-hidden">
       {particles.map((particle) => (
         <span className="particle-dot" key={particle.id} style={particle.style} />
       ))}
@@ -60,8 +60,8 @@ export function ParticleField() {
           width: 3px;
           border-radius: 999px;
           background: rgb(255 255 255 / 0.9);
-          box-shadow: 0 0 12px 3px rgb(255 255 255 / 0.28);
-          filter: blur(0.4px);
+          box-shadow: 0 0 14px 4px rgb(255 255 255 / 0.34);
+          filter: blur(0.25px);
           transform: translate3d(var(--x0), var(--y0), 0);
           animation:
             particleDrift var(--drift) linear var(--delay) infinite alternate,
@@ -81,12 +81,12 @@ export function ParticleField() {
         @keyframes particleGlow {
           0%,
           100% {
-            opacity: 0.18;
+            opacity: 0.22;
             scale: 0.82;
           }
           50% {
-            opacity: 0.62;
-            scale: 1.25;
+            opacity: 0.78;
+            scale: 1.38;
           }
         }
 
