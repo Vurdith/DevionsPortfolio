@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { FloatingHeader } from "@/components/FloatingHeader";
 import { LoadingScene } from "@/components/LoadingScene";
 import { ParticleField } from "@/components/ParticleField";
+import { ScrollCathedralVideo } from "@/components/ScrollCathedralVideo";
 import { SignalCathedral } from "@/components/SignalCathedral";
 import { SoundToggle } from "@/components/SoundToggle";
 
@@ -17,6 +18,7 @@ export function ClientChrome() {
   return (
     <>
       {pathname === "/" ? <LoadingScene /> : null}
+      <ScrollCathedralVideo />
       <SignalCathedral />
       <ParticleField />
       <FloatingHeader />

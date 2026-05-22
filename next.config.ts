@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
       { source: "/music/:path*", headers: staticAssetHeaders },
       { source: "/noise.svg", headers: staticAssetHeaders },
       { source: "/intro-loader-v2.mp4", headers: staticAssetHeaders },
+      { source: "/cathedral-scroll-smooth.mp4", headers: staticAssetHeaders },
       { source: "/ayanakoji-profile-320.webp", headers: staticAssetHeaders },
     ];
   },
