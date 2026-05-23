@@ -39,6 +39,41 @@ function fromWork(work?: Work): FormState {
 }
 
 async function uploadFile(file: File, kind: "image" | "video" | "poster") {
+  const signedRes = await fetch("/api/admin/upload-url", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      kind,
+      contentType: file.type,
+      size: file.size,
+    }),
+  });
+
+  if (signedRes.ok) {
+    const signed = (await signedRes.json()) as {
+      uploadUrl?: string;
+      publicUrl?: string;
+    };
+
+    if (!signed.uploadUrl || !signed.publicUrl) {
+      throw new Error("Upload setup failed.");
+    }
+
+    const uploadRes = await fetch(signed.uploadUrl, {
+      method: "PUT",
+      headers: { "content-type": file.type },
+      body: file,
+    });
+
+    if (!uploadRes.ok) throw new Error("Upload failed.");
+    return signed.publicUrl;
+  }
+
+  if (signedRes.status !== 501) {
+    const json = (await signedRes.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(json?.error ?? "Upload setup failed.");
+  }
+
   const form = new FormData();
   form.set("kind", kind);
   form.set("file", file);

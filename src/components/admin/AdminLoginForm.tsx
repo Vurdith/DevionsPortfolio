@@ -57,7 +57,7 @@ export function AdminLoginForm({ mode }: { mode: "setup" | "login" }) {
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-fog/80">
             {mode === "setup"
-              ? "This password is stored hashed in your local db.json. You’ll use it to access the dashboard."
+              ? "This password is stored hashed for the dashboard. You’ll use it to access works and reviews."
               : "Secure login for works + review moderation."}
           </p>
 

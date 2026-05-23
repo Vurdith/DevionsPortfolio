@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 
 import type { Rating, Review, Work } from "@/types/portfolio";
 
-import { readDb, writeDb } from "./file";
+import { readDb, writeDb } from "./store";
 
 export async function getPublicWorks(): Promise<Work[]> {
   const db = await readDb();
